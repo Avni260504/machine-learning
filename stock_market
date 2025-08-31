@@ -1,0 +1,60 @@
+"""
+Simplified Stock Market Project
+Tools: Python, pandas, matplotlib
+Domain: Data Analyst | Difficulty: Beginner
+
+This script does a simple stock analysis:
+1) Downloads data for Apple, Microsoft, Netflix, Google
+2) Plots prices
+3) Calculates moving averages
+4) Shows correlations
+
+How to run:
+-----------
+pip install pandas yfinance matplotlib
+python easy_stock.py
+"""
+
+import yfinance as yf
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Tickers to analyze
+tickers = ["AAPL", "MSFT", "NFLX", "GOOGL"]
+
+# Download last 3 months of data
+data = yf.download(tickers, period="3mo")
+
+# Use Adjusted Close if available, else Close
+if "Adj Close" in data.columns:
+    adj_close = data["Adj Close"]
+else:
+    adj_close = data["Close"]
+
+# Moving Averages
+ma20 = adj_close.rolling(window=20).mean()
+ma50 = adj_close.rolling(window=50).mean()
+
+# Plot prices with MAs
+for t in tickers:
+    plt.figure(figsize=(8,4))
+    plt.plot(adj_close.index, adj_close[t], label="Price")
+    plt.plot(ma20.index, ma20[t], label="MA20")
+    plt.plot(ma50.index, ma50[t], label="MA50")
+    plt.title(f"{t} Stock Price")
+    plt.legend()
+    plt.show()
+
+# Daily returns and correlation
+returns = adj_close.pct_change()
+corr = returns.corr()
+print("\nCorrelation of Daily Returns:")
+print(corr)
+
+# Plot heatmap
+plt.imshow(corr, cmap="coolwarm", interpolation="none")
+plt.colorbar(label="Correlation")
+plt.xticks(range(len(corr)), corr.columns, rotation=45)
+plt.yticks(range(len(corr)), corr.index)
+plt.title("Correlation Heatmap")
+plt.show()
